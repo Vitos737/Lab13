@@ -1,0 +1,89 @@
+class InsufficientFundsError(Exception):
+    """Исключение для недостаточного количества средств на счете покупателя."""
+    pass
+
+class Product:
+    """Класс для представления товара."""
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+
+class Seller:
+    """Класс для представления продавца."""
+    def __init__(self, name):
+        self.name = name
+        self.products = {}
+
+    def add_product(self, product, quantity):
+        """Добавляет товар в номенклатуру продавца."""
+        if product.name in self.products:
+            self.products[product.name]['quantity'] += quantity
+        else:
+            self.products[product.name] = {'product': product, 'quantity': quantity}
+
+    def sell_product(self, product_name):
+        """Продает товар, уменьшая его количество в номенклатуре."""
+        if product_name in self.products and self.products[product_name]['quantity'] > 0:
+            self.products[product_name]['quantity'] -= 1
+            return self.products[product_name]['product']
+        else:
+            raise ValueError("Товар недоступен или закончился")
+
+class Customer:
+    """Класс для представления покупателя."""
+    def __init__(self, name, balance, address):
+        self.name = name
+        self.balance = balance
+        self.address = address
+
+    def purchase(self, seller, product_name):
+        """Покупает товар у продавца."""
+        product = seller.sell_product(product_name)
+        if self.balance >= product.price:
+            self.balance -= product.price
+            return Order(self, seller, product)
+        else:
+            raise InsufficientFundsError("Недостаточно средств для покупки")
+
+class Order:
+    """Класс для представления заказа."""
+    def __init__(self, customer, seller, product):
+        self.customer = customer
+        self.seller = seller
+        self.product = product
+        self.address = customer.address
+        self.process_order()
+
+    def process_order(self):
+        """Процесс обработки заказа (может включать дополнительные действия)."""
+        # Дополнительная логика обработки заказа может быть здесь
+        print(f"Заказ обработан: {self.product.name} будет доставлен по адресу {self.address}")
+
+# Пример использования
+try:
+    seller = Seller("Магазин электроники")
+    product1 = Product("Ноутбук", 1500)
+    seller.add_product(product1, 10)
+
+    customer = Customer("Иван Иванов", 1000, "ул. Ленина, 1")
+
+    order = customer.purchase(seller, "Ноутбук")
+except InsufficientFundsError as e:
+    print(f"Ошибка: {e}")
+except ValueError as e:
+    print(f"Ошибка: {e}")
+
+
+# Пример использования
+try:
+    seller = Seller("Магазин электроники")
+    product1 = Product("Ноутбук", 1500)
+    seller.add_product(product1, 10)
+
+    customer = Customer("Иван Иванов", 2000, "ул. Ленина, 1")
+
+    order = customer.purchase(seller, "Ноутбук")
+except InsufficientFundsError as e:
+    print(f"Ошибка: {e}")
+except ValueError as e:
+    print(f"Ошибка: {e}")
